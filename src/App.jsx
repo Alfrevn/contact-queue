@@ -1,26 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 
 const COLORS = ['#D85A30','#185FA5','#3B6D11','#7F77DD','#0F6E56','#D4537E','#BA7517','#A32D2D'];
-const LIGHT_BG = {
-  '#D85A30':'#FAECE7','#185FA5':'#E6F1FB','#3B6D11':'#EAF3DE','#7F77DD':'#EEEDFE',
-  '#0F6E56':'#E1F5EE','#D4537E':'#FBEAF0','#BA7517':'#FAEEDA','#A32D2D':'#FCEBEB'
+const DARK_BG = {
+  '#D85A30':'#3d1f14','#185FA5':'#0f2a45','#3B6D11':'#1a3008','#7F77DD':'#1e1c45',
+  '#0F6E56':'#0a2e25','#D4537E':'#3d1228','#BA7517':'#3d2a06','#A32D2D':'#3d0f0f'
 };
 
 function initials(name) {
   return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
-
 function getDays(lastContact) {
   return Math.floor((Date.now() - lastContact) / 86400000);
 }
-
 function getStatus(cat, days) {
   if (!cat) return 'ok';
   if (days >= cat.alarm) return 'alarm';
   if (days >= cat.warn) return 'warn';
   return 'ok';
 }
-
 function urgency(person, cats) {
   const cat = cats.find(c => c.id === person.catId);
   if (!cat) return 0;
@@ -29,13 +26,13 @@ function urgency(person, cats) {
 
 function Avatar({ person, cats, size = 42 }) {
   const cat = cats.find(c => c.id === person.catId);
-  const bg = cat ? (LIGHT_BG[cat.color] || '#eee') : '#eee';
-  const fg = cat ? cat.color : '#666';
+  const bg = cat ? (DARK_BG[cat.color] || '#1e293b') : '#1e293b';
+  const fg = cat ? cat.color : '#94a3b8';
   const style = {
     width: size, height: size, borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontWeight: 500, fontSize: size * 0.3, flexShrink: 0, overflow: 'hidden',
-    background: bg, color: fg
+    fontWeight: 700, fontSize: size * 0.32, flexShrink: 0, overflow: 'hidden',
+    background: bg, color: fg, border: `2px solid ${fg}33`
   };
   if (person.photo) {
     return <div style={style}><img src={person.photo} alt={person.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>;
@@ -70,9 +67,7 @@ function loadData() {
   try {
     const rc = localStorage.getItem('pq_cats');
     const rp = localStorage.getItem('pq_people');
-    if (rc && rp) {
-      return { cats: JSON.parse(rc), people: JSON.parse(rp) };
-    }
+    if (rc && rp) return { cats: JSON.parse(rc), people: JSON.parse(rp) };
   } catch (e) {}
   return defaultData();
 }
@@ -84,29 +79,52 @@ function saveData(cats, people) {
   } catch (e) {}
 }
 
-// ─── Styles ────────────────────────────────────────────────
+const C = {
+  bg: '#0f172a',
+  card: '#1e293b',
+  cardBorder: '#334155',
+  topbar: '#0f172a',
+  nav: '#0f172a',
+  navBorder: '#1e293b',
+  textPrimary: '#f1f5f9',
+  textSecondary: '#94a3b8',
+  accent: '#3b82f6',
+  alarm: '#ef4444',
+  warn: '#f59e0b',
+  ok: '#22c55e',
+  alarmBg: '#450a0a',
+  warnBg: '#431407',
+  okBg: '#052e16',
+  input: '#0f172a',
+  inputBorder: '#334155',
+  modal: '#1e293b',
+};
+
 const S = {
-  app: { fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: 480, margin: '0 auto', padding: '0 0 80px 0', background: '#fff', minHeight: '100vh' },
-  topbar: { position: 'sticky', top: 0, zIndex: 50, background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  dateChip: { background: '#f3f4f6', borderRadius: 8, padding: '5px 12px', fontSize: 13, fontWeight: 600, color: '#374151' },
-  nav: { position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, background: '#fff', borderTop: '1px solid #e5e7eb', display: 'flex', zIndex: 50 },
-  navBtn: (active) => ({ flex: 1, padding: '12px 4px 10px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: active ? 600 : 400, color: active ? '#2563eb' : '#9ca3af', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }),
+  app: { fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: 480, margin: '0 auto', padding: '0 0 80px 0', background: C.bg, minHeight: '100vh' },
+  topbar: { position: 'sticky', top: 0, zIndex: 50, background: C.topbar, borderBottom: `1px solid ${C.navBorder}`, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  dateChip: { background: '#1e293b', borderRadius: 8, padding: '5px 12px', fontSize: 13, fontWeight: 700, color: C.accent, letterSpacing: '0.02em' },
+  appTitle: { fontSize: 13, fontWeight: 500, color: C.textSecondary, letterSpacing: '0.08em', textTransform: 'uppercase' },
+  nav: { position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, background: C.nav, borderTop: `1px solid ${C.navBorder}`, display: 'flex', zIndex: 50 },
+  navBtn: (active) => ({ flex: 1, padding: '12px 4px 10px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: active ? 700 : 400, color: active ? C.accent : C.textSecondary, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }),
   section: { padding: '12px 16px' },
-  card: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px', marginBottom: 8 },
-  addBtn: { display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 14px', fontSize: 13, cursor: 'pointer', color: '#374151', marginBottom: 12 },
+  card: { background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 14, padding: '14px 16px', marginBottom: 10 },
+  addBtn: { display: 'flex', alignItems: 'center', gap: 6, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 10, padding: '10px 16px', fontSize: 14, cursor: 'pointer', color: C.accent, marginBottom: 14, fontWeight: 500 },
   pill: (status) => ({
-    padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-    background: status === 'alarm' ? '#fee2e2' : status === 'warn' ? '#fef3c7' : '#d1fae5',
-    color: status === 'alarm' ? '#991b1b' : status === 'warn' ? '#92400e' : '#065f46',
+    padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+    background: status === 'alarm' ? C.alarmBg : status === 'warn' ? C.warnBg : C.okBg,
+    color: status === 'alarm' ? C.alarm : status === 'warn' ? C.warn : C.ok,
+    border: `1px solid ${status === 'alarm' ? C.alarm : status === 'warn' ? C.warn : C.ok}44`,
   }),
-  modalBg: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' },
-  modal: { background: '#fff', borderRadius: '16px 16px 0 0', padding: '24px 20px', width: '100%', maxWidth: 480, maxHeight: '85vh', overflowY: 'auto' },
-  input: { width: '100%', border: '1px solid #d1d5db', borderRadius: 8, padding: '9px 12px', fontSize: 15, background: '#fff', color: '#111', boxSizing: 'border-box' },
-  label: { fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 },
-  field: { marginBottom: 14 },
-  btnPrimary: { flex: 1, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: 10, fontSize: 15, cursor: 'pointer', fontWeight: 500 },
-  btnCancel: { flex: 1, background: 'none', border: '1px solid #d1d5db', borderRadius: 8, padding: 10, fontSize: 15, cursor: 'pointer', color: '#6b7280' },
-  sectionHead: { fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '12px 0 6px', borderBottom: '1px solid #f3f4f6', paddingBottom: 5 },
+  modalBg: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' },
+  modal: { background: C.modal, borderRadius: '20px 20px 0 0', padding: '24px 20px', width: '100%', maxWidth: 480, maxHeight: '85vh', overflowY: 'auto', border: `1px solid ${C.cardBorder}` },
+  input: { width: '100%', border: `1px solid ${C.inputBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 15, background: C.input, color: C.textPrimary, boxSizing: 'border-box' },
+  label: { fontSize: 12, color: C.textSecondary, display: 'block', marginBottom: 5, fontWeight: 500 },
+  field: { marginBottom: 16 },
+  btnPrimary: { flex: 1, background: C.accent, color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 15, cursor: 'pointer', fontWeight: 600 },
+  btnCancel: { flex: 1, background: 'none', border: `1px solid ${C.cardBorder}`, borderRadius: 10, padding: 12, fontSize: 15, cursor: 'pointer', color: C.textSecondary },
+  sectionHead: { fontSize: 11, fontWeight: 700, color: C.textSecondary, textTransform: 'uppercase', letterSpacing: '0.07em', margin: '16px 0 8px', borderBottom: `1px solid ${C.cardBorder}`, paddingBottom: 6 },
+  modalTitle: { fontSize: 18, fontWeight: 700, marginBottom: 20, color: C.textPrimary },
 };
 
 // ─── Queue Section ──────────────────────────────────────────
@@ -135,26 +153,29 @@ function QueueSection({ cats, people, setPeople, saveAll, onEdit }) {
           const pct = cat ? Math.min(100, Math.round(days / cat.alarm * 100)) : 0;
           const daysLeft = cat ? cat.alarm - days : 0;
           const meta = status === 'ok'
-            ? `${cat?.name} · hace ${days}d · faltan ${daysLeft}d`
+            ? `faltan ${daysLeft}d`
             : status === 'warn'
-            ? `${cat?.name} · hace ${days}d · alarma en ${daysLeft}d`
-            : `${cat?.name} · hace ${days}d · ${Math.abs(daysLeft)}d pasado el límite`;
-          const rankColor = status === 'alarm' ? '#dc2626' : status === 'warn' ? '#d97706' : '#9ca3af';
-          const barColor = status === 'alarm' ? '#dc2626' : status === 'warn' ? '#f59e0b' : '#10b981';
+            ? `alarma en ${daysLeft}d`
+            : `${Math.abs(daysLeft)}d pasado el límite`;
+          const rankColor = status === 'alarm' ? C.alarm : status === 'warn' ? C.warn : C.textSecondary;
+          const barColor = status === 'alarm' ? C.alarm : status === 'warn' ? C.warn : C.ok;
+          const cardBorderColor = status === 'alarm' ? `${C.alarm}55` : status === 'warn' ? `${C.warn}44` : C.cardBorder;
           const r = rank++;
           return (
-            <div key={p.id} style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => touch(p.id)}>
-              <div style={{ fontSize: 18, fontWeight: 600, minWidth: 24, textAlign: 'center', color: rankColor }}>{r}</div>
-              <Avatar person={p} cats={cats} size={38} />
+            <div key={p.id}
+              style={{ ...S.card, borderColor: cardBorderColor, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'opacity 0.1s' }}
+              onClick={() => touch(p.id)}>
+              <div style={{ fontSize: 22, fontWeight: 800, minWidth: 28, textAlign: 'center', color: rankColor }}>{r}</div>
+              <Avatar person={p} cats={cats} size={42} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>{meta}</div>
-                <div style={{ height: 3, background: '#f3f4f6', borderRadius: 2, marginTop: 5, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${pct}%`, background: barColor, borderRadius: 2 }} />
+                <div style={{ fontSize: 16, fontWeight: 700, color: C.textPrimary }}>{p.name}</div>
+                <div style={{ fontSize: 12, color: C.textSecondary, marginTop: 2 }}>hace {days}d · {meta}</div>
+                <div style={{ height: 6, background: '#0f172a', borderRadius: 3, marginTop: 7, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: barColor, borderRadius: 3, transition: 'width 0.3s' }} />
                 </div>
               </div>
-              <span style={S.pill(status)}>{status === 'alarm' ? 'urgente' : status === 'warn' ? 'aviso' : 'ok'}</span>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 16, padding: '0 4px' }}
+              <span style={S.pill(status)}>{status === 'alarm' ? '🔴' : status === 'warn' ? '🟡' : '🟢'}</span>
+              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textSecondary, fontSize: 18, padding: '0 4px' }}
                 onClick={e => { e.stopPropagation(); onEdit(p.id); }}>✎</button>
             </div>
           );
@@ -163,7 +184,7 @@ function QueueSection({ cats, people, setPeople, saveAll, onEdit }) {
     );
   }
 
-  if (!people.length) return <div style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af' }}>no hay personas aún</div>;
+  if (!people.length) return <div style={{ textAlign: 'center', padding: '3rem', color: C.textSecondary }}>no hay personas aún</div>;
   return (
     <div style={S.section}>
       {renderGroup(alarm, '🔴 urgentes')}
@@ -183,18 +204,18 @@ function PeopleSection({ cats, people, setPeople, saveAll, onAdd, onEdit }) {
   return (
     <div style={S.section}>
       <button style={S.addBtn} onClick={onAdd}>＋ agregar persona</button>
-      {!people.length && <div style={{ color: '#9ca3af', fontSize: 14 }}>no hay personas aún</div>}
+      {!people.length && <div style={{ color: C.textSecondary, fontSize: 14 }}>no hay personas aún</div>}
       {people.map(p => {
         const cat = cats.find(c => c.id === p.catId);
         return (
           <div key={p.id} style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Avatar person={p} cats={cats} size={42} />
+            <Avatar person={p} cats={cats} size={44} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 600 }}>{p.name}</div>
-              <div style={{ fontSize: 12, color: '#9ca3af' }}>{cat?.name || 'sin categoría'}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: C.textPrimary }}>{p.name}</div>
+              <div style={{ fontSize: 12, color: C.textSecondary, marginTop: 2 }}>{cat?.name || 'sin categoría'}</div>
             </div>
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 16 }} onClick={() => onEdit(p.id)}>✎</button>
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fca5a5', fontSize: 16 }} onClick={() => del(p.id)}>✕</button>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textSecondary, fontSize: 18 }} onClick={() => onEdit(p.id)}>✎</button>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.alarm, fontSize: 18, opacity: 0.7 }} onClick={() => del(p.id)}>✕</button>
           </div>
         );
       })}
@@ -215,15 +236,15 @@ function CatsSection({ cats, setCats, people, saveAll, onAdd, onEditCat }) {
       <button style={S.addBtn} onClick={onAdd}>＋ nueva categoría</button>
       {cats.map(c => (
         <div key={c.id} style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{ width: 12, height: 12, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
-          <div style={{ flex: 1, fontWeight: 600, fontSize: 15 }}>{c.name}</div>
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+          <div style={{ flex: 1, fontWeight: 700, fontSize: 15, color: C.textPrimary }}>{c.name}</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{ ...S.pill('ok'), background: '#d1fae5', color: '#065f46' }}>obj: {c.target}d</span>
-            <span style={{ ...S.pill('warn') }}>aviso: {c.warn}d</span>
-            <span style={{ ...S.pill('alarm') }}>alarma: {c.alarm}d</span>
+            <span style={{ ...S.pill('ok') }}>obj: {c.target}d</span>
+            <span style={{ ...S.pill('warn') }}>{c.warn}d</span>
+            <span style={{ ...S.pill('alarm') }}>{c.alarm}d</span>
           </div>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 16 }} onClick={() => onEditCat(c.id)}>✎</button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fca5a5', fontSize: 16 }} onClick={() => del(c.id)}>✕</button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textSecondary, fontSize: 18 }} onClick={() => onEditCat(c.id)}>✎</button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.alarm, fontSize: 18, opacity: 0.7 }} onClick={() => del(c.id)}>✕</button>
         </div>
       ))}
     </div>
@@ -254,11 +275,13 @@ function PersonModal({ cats, person, onSave, onClose }) {
   return (
     <div style={S.modalBg} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={S.modal}>
-        <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 16 }}>{person ? 'editar persona' : 'agregar persona'}</h3>
+        <h3 style={S.modalTitle}>{person ? 'editar persona' : 'agregar persona'}</h3>
         <div style={S.field}>
           <label style={S.label}>foto (opcional)</label>
-          <div style={{ border: '1px dashed #d1d5db', borderRadius: 8, padding: 12, textAlign: 'center', cursor: 'pointer' }} onClick={() => fileRef.current.click()}>
-            {photo ? <img src={photo} style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover' }} alt="preview" /> : <div style={{ color: '#9ca3af', fontSize: 13 }}>📷 tocar para cargar foto</div>}
+          <div style={{ border: `1px dashed ${C.inputBorder}`, borderRadius: 10, padding: 14, textAlign: 'center', cursor: 'pointer' }} onClick={() => fileRef.current.click()}>
+            {photo
+              ? <img src={photo} style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover' }} alt="preview" />
+              : <div style={{ color: C.textSecondary, fontSize: 13 }}>📷 tocar para cargar foto</div>}
           </div>
           <input type="file" accept="image/*" ref={fileRef} style={{ display: 'none' }} onChange={handlePhoto} />
         </div>
@@ -301,17 +324,17 @@ function CatModal({ cat, onSave, onClose }) {
   return (
     <div style={S.modalBg} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={S.modal}>
-        <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 16 }}>{cat ? 'editar categoría' : 'nueva categoría'}</h3>
+        <h3 style={S.modalTitle}>{cat ? 'editar categoría' : 'nueva categoría'}</h3>
         <div style={S.field}>
           <label style={S.label}>nombre</label>
           <input style={S.input} value={name} onChange={e => setName(e.target.value)} placeholder="ej: familia" />
         </div>
         <div style={S.field}>
           <label style={S.label}>color</label>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {COLORS.map(c => (
               <div key={c} onClick={() => setColor(c)}
-                style={{ width: 28, height: 28, borderRadius: '50%', background: c, cursor: 'pointer', border: c === color ? '3px solid #111' : '3px solid transparent' }} />
+                style={{ width: 32, height: 32, borderRadius: '50%', background: c, cursor: 'pointer', border: c === color ? `3px solid #fff` : '3px solid transparent', transition: 'border 0.15s' }} />
             ))}
           </div>
         </div>
@@ -334,7 +357,7 @@ export default function App() {
   const [tab, setTab] = useState('queue');
   const [cats, setCats] = useState([]);
   const [people, setPeople] = useState([]);
-  const [personModal, setPersonModal] = useState(null); // null | 'new' | id
+  const [personModal, setPersonModal] = useState(null);
   const [catModal, setCatModal] = useState(null);
 
   useEffect(() => {
@@ -351,24 +374,18 @@ export default function App() {
   const dateStr = `${DAYS[d.getDay()]} ${d.getDate()}/${MONTHS[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`;
 
   function savePerson(data) {
-    let next;
-    if (personModal === 'new') {
-      next = [...people, { id: Date.now(), ...data }];
-    } else {
-      next = people.map(p => p.id === personModal ? { ...p, ...data } : p);
-    }
+    const next = personModal === 'new'
+      ? [...people, { id: Date.now(), ...data }]
+      : people.map(p => p.id === personModal ? { ...p, ...data } : p);
     setPeople(next);
     saveAll(cats, next);
     setPersonModal(null);
   }
 
   function saveCat(data) {
-    let next;
-    if (catModal === 'new') {
-      next = [...cats, { id: Date.now(), ...data }];
-    } else {
-      next = cats.map(c => c.id === catModal ? { ...c, ...data } : c);
-    }
+    const next = catModal === 'new'
+      ? [...cats, { id: Date.now(), ...data }]
+      : cats.map(c => c.id === catModal ? { ...c, ...data } : c);
     setCats(next);
     saveAll(next, people);
     setCatModal(null);
@@ -384,7 +401,7 @@ export default function App() {
     <div style={S.app}>
       <div style={S.topbar}>
         <span style={S.dateChip}>{dateStr}</span>
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#6b7280' }}>contactos</span>
+        <span style={S.appTitle}>contactos</span>
       </div>
 
       {tab === 'queue' && <QueueSection cats={cats} people={people} setPeople={setPeople} saveAll={saveAll} onEdit={id => setPersonModal(id)} />}
@@ -394,7 +411,7 @@ export default function App() {
       <nav style={S.nav}>
         {tabs.map(t => (
           <button key={t.id} style={S.navBtn(tab === t.id)} onClick={() => setTab(t.id)}>
-            <span style={{ fontSize: 18 }}>{t.icon}</span>
+            <span style={{ fontSize: 20 }}>{t.icon}</span>
             <span>{t.label}</span>
           </button>
         ))}
@@ -419,4 +436,3 @@ export default function App() {
     </div>
   );
 }
-
